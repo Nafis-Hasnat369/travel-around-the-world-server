@@ -22,18 +22,59 @@ const run = async () => {
         const servicesCollection = database.collection("services");
         const bookingsCollections = database.collection("bookings");
 
+        // Add a service
+
+        app.post('/addServices', async (req, res) => {
+            const result = await servicesCollection.insertOne(req.body);
+            res.json(result);
+        });
+
         // GET API || all services
         app.get('/services', async (req, res) => {
             const services = await servicesCollection.find({}).toArray();
             res.send(services);
         });
+        // Get single service
+        app.get('/singleProduct/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await servicesCollection.find({ _id: ObjectId(id) }).toArray();
+            res.json(result[0]);
+        });
 
-        // add to my bookings
-        app.post('/myBookings', async (req, res) => {
+        // ConfirmOrder
+        app.post('/confirmOrder', async (req, res) => {
             const data = req.body;
-            console.log(data);
             const result = await bookingsCollections.insertOne(data);
-            // res.send(result);
+            res.json(result);
+        });
+
+        // Get my orders
+        app.get('/myOrders/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await bookingsCollections.find({ email: email }).toArray();
+            res.json(result);
+        });
+        // Delete an order
+        app.delete('/cancelOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await bookingsCollections.deleteOne({ _id: id });
+            res.json(result);
+        });
+        // Get all orders
+        app.get('/allOrders', async (req, res) => {
+            const result = await bookingsCollections.find({}).toArray();
+            res.json(result);
+        });
+
+        // Update Status
+        app.put('/updateStatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const newStatus = req.body.updatedStatus;
+            const filter = { _id: id };
+            const result = await bookingsCollections.updateOne(filter, {
+                $set: { status: newStatus }
+            });
+            res.json(result);
         });
 
     }
